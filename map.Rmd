@@ -1,6 +1,6 @@
 ---
 title: "Advanced GIS Lab 5: Leaflet"
-author: "Leah Fine"
+author: "Leah Fine and Kaitlin Carney"
 date: "December 4, 2015"
 output:
   html_document:
@@ -86,5 +86,34 @@ leaflet() %>%
   addProviderTiles('Stamen.Terrain') %>%
   addRasterImage(r, colors=pal, project=F) %>%
   addLegend(pal=pal, values=values(r), title='Habitats')
+```
+
+##Create GeoJSON Files
+
+```{r, eval=FALSE}
+library(rgdal)
+library(leaflet)
+
+gdb = 'H:/GIS296/lab3/golf.gdb'
+dir = 'H:/GIS296/lab5/adv-gis/data'
+
+# iterate through features in geodatabase
+for (fc in ogrListLayers(gdb)){
+  
+  # print paths
+  geo = sprintf('%s/%s.geojson', dir, fc)
+  tmp = tempfile()
+  cat(sprintf('gdb/fc: %s/%s\n  -> tmp: %s\n  -> geo: %s\n', gdb, fc, tmp, geo))
+  
+  # read in feature class and project to geographic
+  sp = readOGR(gdb, fc) %>%
+    spTransform(leaflet:::epsg4326)
+
+  # output to geojson
+  writeOGR(sp, dsn=tmp, layer='dummy', driver='GeoJSON')
+  
+  # move file
+  file.rename(tmp, geo)
+}
 ```
 
